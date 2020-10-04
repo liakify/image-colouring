@@ -1,5 +1,5 @@
 '''
-Outputs an .npy file storing an np array containing (R, G, B, Y, index) for each image.
+Outputs an .npy file storing an np array containing (R, G, B, Y, index) for each image, sorted by Y (decreasing).
 '''
 
 from PIL import Image
