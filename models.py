@@ -1,4 +1,5 @@
 '''
+Contains the models used in the project.
 '''
 
 import tensorflow as tf
@@ -8,7 +9,7 @@ from tensorflow.keras.models import Sequential
 '''
 Returns the model object for image colouring via MSE loss.
 '''
-def getMSEmodel():
+def getMSEModel():
     model = Sequential()
     model.add(InputLayer(input_shape=(None, None, 1)))
     model.add(Conv2D(8, (3, 3), activation='relu', padding='same', strides=2))
@@ -27,4 +28,3 @@ def getMSEmodel():
     model.compile(optimizer='rmsprop',loss='mse')
 
     return model
-

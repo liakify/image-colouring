@@ -76,17 +76,17 @@ def randomCropAll():
         croppedIm.save('{}/image_cropped_{:05d}.jpg'.format(IMAGE_FOLDER, i))
 
 '''
-Loads images based on the sorted order of IDs stored in the .npy file.
-The .npy file is presumably already sorted by yellow when it was saved. 
-"fraction" should be a number between 0 and 1 representing the fraction of images to load.
-For our project, we use 0.1 for easy, 0.5 for medium and 1.0 for hard.
+Loads images based on the list of image IDs specified.
+
+Returns 2 numpy arrays X, Y.
+X is a (n, width, height, 1) array containing the L values in the LAB space.
+Y is a (n, width, height, 2) array containing the A, B values in the LAB space.
+    n refers to the number of images loaded
 '''
-def loadImageData(fraction=0.1):
-    sortedIds = np.load("npy/rgbySortedByYellow.npy")[:,4].astype(int)
-    numImages = int(sortedIds.shape[0] * fraction) + 1
+def loadImageData(ids):
     X = []
     Y = []
-    for i in sortedIds[:numImages]:
+    for i in ids:
         img = Image.open('{}/image_cropped_{:05d}.jpg'.format(IMAGE_FOLDER, i))
         img = np.array(img)
         
@@ -94,9 +94,23 @@ def loadImageData(fraction=0.1):
         y = rgb2lab(img)[:,:,1:]
         y /= 128
 
-        X.append(x)
+        X.append(x.reshape(x.shape + (1,)))
         Y.append(y)
 
     X = np.array(X, dtype=float)
     Y = np.array(Y, dtype=float)
     return X, Y
+
+
+'''
+Prepares a list of image IDs to use in training and testing based on the sorted order of IDs stored in the .npy file.
+The .npy file is presumably already sorted by yellow when it was saved.
+
+"fraction" should be a number between 0 and 1 representing the fraction of images to take.
+For our project, we use 0.1 for easy, 0.5 for medium and 1.0 for hard,
+    e.g. easy => take the 10% most yellow images
+'''
+def getImageIds(fraction):
+    sortedIds = np.load("npy/rgbySortedByYellow.npy")[:,4].astype(int)
+    numImages = round(sortedIds.shape[0] * fraction)
+    return sortedIds[:numImages]
