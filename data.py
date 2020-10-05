@@ -1,13 +1,13 @@
 '''
-Module contains all the data preprocessing functions.
+Module contains all the data and image processing functions.
 '''
 import numpy as np
 from PIL import Image
 from skimage.color import rgb2lab, lab2rgb, rgb2gray, xyz2lab
-from tensorflow.keras.preprocessing.image import load_img, img_to_array
 
 END = 8189
 IMAGE_FOLDER = "../jpg"
+OUTPUT_FOLDER = "../output"
 
 '''
 Takes in a PIL.Image object and returns average (R, G, B, Y) values.
@@ -114,3 +114,25 @@ def getImageIds(fraction):
     sortedIds = np.load("npy/rgbySortedByYellow.npy")[:,4].astype(int)
     numImages = round(sortedIds.shape[0] * fraction)
     return sortedIds[:numImages]
+
+'''
+Generates and saves images produced by the model by combining the original input (L)
+    with the predicted output (AB).
+
+L is an (n, width, height, 1) numpy array containing L values of an LAB image.
+AB is an (n, width, height, 2) numpy array containing A and B values an LAB image.
+ids is a list containing n items for the image IDs to use when saving the images.
+'''
+def generateImages(L, AB, ids):
+    dimensions = L.shape[1:3] + (3,)
+    for i in range(len(ids)):
+        cur = np.zeros(dimensions)
+        cur[:,:,0] = L[i][:,:,0]
+        cur[:,:,1:] = AB[i]
+        id = ids[i]
+        filename = "{}/test_result_{:05d}.jpg".format(OUTPUT_FOLDER, id)
+        filenameGray = "{}/test_result_gray_{:05d}.jpg".format(OUTPUT_FOLDER, id)
+        rgb = (lab2rgb(cur) * 255).astype(np.uint8)
+        gray = (rgb2gray(rgb) * 255).astype(np.uint8)
+        Image.fromarray(rgb).save(filename)
+        Image.fromarray(gray).save(filenameGray)

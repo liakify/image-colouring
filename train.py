@@ -10,12 +10,12 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 ids = data.getImageIds(0.01)
-train, test = train_test_split(ids, test_size=0.2, random_state=42)
+trainIds, testIds = train_test_split(ids, test_size=0.2, random_state=42)
 
-np.save("npy/train", train)
-np.save("npy/test", test)
+np.save("npy/train", trainIds)
+np.save("npy/test", testIds)
 
-X_train, Y_train = data.loadImageData(train)
+X_train, Y_train = data.loadImageData(trainIds)
 
 model = models.getMSEModel()
 
