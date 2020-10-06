@@ -13,7 +13,6 @@ CIE94 colour distance metric that is an improvement over pure RMSE on the L*a*b*
 
 NOTE: 
     1. This function is currently hardcoded to be specifically for an image resolution of 384 * 384, and for training batch size 1.
-    2. In the original CIE94 formula, the pixel-wise error term has a square-root. In this specific implementation, the square-root is ommited.
 '''
 def cie94(y_true, y_pred):
     alpha = []
@@ -49,8 +48,7 @@ def cie94(y_true, y_pred):
         K_1 = 0.045 
         K_2 = 0.015
         
-        # No square-root when calculating error term.
-        loss += tf.keras.backend.sum(delta_Csqr / tf.keras.backend.square(1.0 + K_1 * C1) + delta_H_square / tf.keras.backend.square(1.0 + K_2 * C1), axis=0)
+        loss += tf.keras.backend.sum(tf.keras.backend.sqrt(delta_Csqr / tf.keras.backend.square(1.0 + K_1 * C1) + delta_H_square / tf.keras.backend.square(1.0 + K_2 * C1)), axis=0)
     return loss / normalizing_constant
 
 '''
