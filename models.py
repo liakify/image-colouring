@@ -93,5 +93,7 @@ def getCIE94Model():
     model.add(UpSampling2D((2, 2)))
     model.add(Conv2D(2, (3, 3), activation='tanh', padding='same'))
 
-    model.compile(optimizer='rmsprop',loss=cie94)    
+    model.compile(optimizer='rmsprop',loss=cie94)
+
+    return model
 
