@@ -50,7 +50,7 @@ def cie94(y_true, y_pred):
         K_2 = 0.015
         
         # No square-root when calculating error term.
-        loss += tf.keras.backend.sum(tf.keras.backend.sqrt(delta_Csqr / tf.keras.backend.square(1.0 + K_1 * C1) + delta_H_square / tf.keras.backend.square(1.0 + K_2 * C1)), axis=0)
+        loss += tf.keras.backend.sum(delta_Csqr / tf.keras.backend.square(1.0 + K_1 * C1) + delta_H_square / tf.keras.backend.square(1.0 + K_2 * C1), axis=0)
     return loss / normalizing_constant
 
 '''
