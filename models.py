@@ -97,3 +97,27 @@ def getCIE94Model():
 
     return model
 
+'''
+Returns the model object that uses classification for colouring.
+'''
+def getClassificationModel():
+    model = Sequential()
+    model.add(InputLayer(input_shape=(None, None, 1)))
+    model.add(Conv2D(8, (3, 3), activation='relu', padding='same', strides=2))
+    model.add(Conv2D(8, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(16, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(16, (3, 3), activation='relu', padding='same', strides=2))
+    model.add(Conv2D(32, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(32, (3, 3), activation='relu', padding='same', strides=2))
+    model.add(UpSampling2D((2, 2)))
+    model.add(Conv2D(32, (3, 3), activation='relu', padding='same'))
+    model.add(UpSampling2D((2, 2)))
+    model.add(Conv2D(16, (3, 3), activation='relu', padding='same'))
+    model.add(UpSampling2D((2, 2)))
+    model.add(Conv2D(313, (1, 1)))
+    model.add(Lambda(lambda x: x / 0.38))
+    model.add(Activation('softmax'))
+
+    model.compile(optimizer='rmsprop',loss='categorical_crossentropy')
+
+    return model

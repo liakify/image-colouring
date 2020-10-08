@@ -16,6 +16,7 @@ np.save("npy/train", trainIds)
 np.save("npy/test", testIds)
 
 X_train, Y_train = data.loadImageData(trainIds)
+Y_train /= 128
 
 model = models.getMSEModel()
 

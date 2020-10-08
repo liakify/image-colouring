@@ -4,6 +4,7 @@ Module contains all the data and image processing functions.
 import numpy as np
 from PIL import Image
 from skimage.color import rgb2lab, lab2rgb, rgb2gray, xyz2lab
+from sklearn.neighbors import NearestNeighbors
 
 END = 8189
 IMAGE_FOLDER = "../jpg"
@@ -92,7 +93,6 @@ def loadImageData(ids):
         
         x = rgb2lab(img)[:,:,0]
         y = rgb2lab(img)[:,:,1:]
-        y /= 128
 
         X.append(x.reshape(x.shape + (1,)))
         Y.append(y)
@@ -136,3 +136,30 @@ def generateImages(L, AB, ids):
         gray = (rgb2gray(rgb) * 255).astype(np.uint8)
         Image.fromarray(rgb).save(filename)
         Image.fromarray(gray).save(filenameGray)
+
+'''
+Quantizes image AB values into a discrete probability distribution over the most similar colours
+    from a specified colour palette (or "bins"). 
+
+image is a (width, height, 2) numpy array containing AB values an image.
+bins is a (m, 2) numpy array containing m different AB values to quantize to.
+k is an int to set the number of nearest bins to quantize to. Default is 5.
+'''
+def quantize(image, bins, k=5):
+    numBins = bins.shape[0]
+    width, height = image.shape[:2]
+    numPixels = width * height
+
+    nn = NearestNeighbors(n_neighbors=k).fit(bins)
+    flattenedImage = image.reshape(numPixels, 2)
+    dists, indices = nn.kneighbors(flattenedImage)
+
+    # Using Gaussian distribution for probability values based on distance
+    sigma = 5.0
+    weights = np.exp(- dists ** 2 / (2 * sigma ** 2))
+    weights /= np.sum(weights, axis=1)[:, np.newaxis]
+
+    result = np.zeros((numPixels, numBins))
+    result[:, indices] = weights
+
+    return result.reshape(width, height, numBins)
