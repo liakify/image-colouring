@@ -16,8 +16,11 @@ np.save("npy/train", trainIds)
 np.save("npy/test", testIds)
 
 X_train, Y_train = data.loadImageData(trainIds)
-Y_train /= 128
 
+# Model specific code
+'''
+# MSE model
+Y_train /= 128
 model = models.getMSEModel()
 
 model.fit(x=X_train, 
@@ -26,3 +29,4 @@ model.fit(x=X_train,
     epochs=100)
 
 model.save("models/MSEmodel")
+'''

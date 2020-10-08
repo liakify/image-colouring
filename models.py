@@ -115,7 +115,6 @@ def getClassificationModel():
     model.add(Conv2D(16, (3, 3), activation='relu', padding='same'))
     model.add(UpSampling2D((2, 2)))
     model.add(Conv2D(313, (1, 1)))
-    model.add(Lambda(lambda x: x / 0.38))
     model.add(Activation('softmax'))
 
     model.compile(optimizer='rmsprop',loss='categorical_crossentropy')
