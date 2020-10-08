@@ -9,7 +9,7 @@ import models
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-ids = data.getImageIds(0.0005)
+ids = data.getImageIds(0.01)
 trainIds, testIds = train_test_split(ids, test_size=0.2, random_state=42)
 
 np.save("npy/train", trainIds)

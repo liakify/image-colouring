@@ -101,7 +101,6 @@ def loadImageData(ids):
     Y = np.array(Y, dtype=float)
     return X, Y
 
-
 '''
 Prepares a list of image IDs to use in training and testing based on the sorted order of IDs stored in the .npy file.
 The .npy file is presumably already sorted by yellow when it was saved.
@@ -197,7 +196,6 @@ def unquantize(prob, bins, T=0.38):
     adjusted = np.exp(np.log(prob) / T)
     adjusted /= np.sum(adjusted, axis=2)[:,:,np.newaxis]
     return np.dot(adjusted, bins)
-
 
 '''
 Convenience function to call unquantize() for multiple images at once.

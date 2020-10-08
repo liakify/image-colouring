@@ -13,17 +13,20 @@ X_test, Y_test = data.loadImageData(testIds)
 '''
 # MSE model
 model = keras.models.load_model("models/MSEmodel")
-model.evaluate(X_test, Y_test, batch_size=1)
-predictions = model.predict(X_test)
 
+model.evaluate(X_test, Y_test, batch_size=1)
+
+predictions = model.predict(X_test)
 data.generateImages(X_test, predictions * 127, testIds)
 '''
 
 # Classification model
 model = keras.models.load_model("models/ClassificationModel")
-model.evaluate(X_test, Y_test, batch_size=1)
-predictions = model.predict(X_test)
-
 bins = np.load("npy/pts_in_hull.npy")
+
+Y_test = data.batchQuantize(Y_test, bins)
+model.evaluate(X_test, Y_test, batch_size=1)
+
+predictions = model.predict(X_test)
 AB = data.batchUnquantize(predictions, bins)
 data.generateImages(X_test, AB, testIds)
