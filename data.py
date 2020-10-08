@@ -144,6 +144,9 @@ Quantizes image AB values into a discrete probability distribution over the most
 AB is a (width, height, 2) numpy array containing AB values an image.
 bins is a (m, 2) numpy array containing m different AB values to quantize to.
 k is an int to set the number of nearest bins to quantize to. Default is 5.
+
+Returns a (width, height, m) numpy array containing the per-pixel 
+    discrete probability distribution. 
 '''
 def quantize(AB, bins, k=5):
     numBins = bins.shape[0]
@@ -165,6 +168,21 @@ def quantize(AB, bins, k=5):
     return result.reshape(width, height, numBins)
 
 '''
+Convenience function to call quantize() for multiple images at once.
+
+Y is a (n, width, height, 2) numpy array containing AB values of n images.
+bins - see quantize().
+k - see quantize(). Defaults to 5.
+
+Returns a (n, width, height, m) numpy array where m is the number of colour bins.
+'''
+def batchQuantize(Y, bins, k=5):
+    result = []
+    for ab in Y:
+        result.append(quantize(ab, bins, k))
+    return np.array(result)
+
+'''
 Restores image AB values from a discrete probability distribution over the
     specified colour palette (or "bins"). Each pixel value is calculated as the
     expected value of its distribution
@@ -179,3 +197,20 @@ def unquantize(prob, bins, T=0.38):
     adjusted = np.exp(np.log(prob) / T)
     adjusted /= np.sum(adjusted, axis=2)[:,:,np.newaxis]
     return np.dot(adjusted, bins)
+
+
+'''
+Convenience function to call unquantize() for multiple images at once.
+
+Y is a (n, width, height, m) numpy array containing the per pixel probability distribution 
+    of n images, where m is the number of colour bins.
+bins - see unquantize().
+T - see unquantize(). Defaults to 0.38.
+
+Returns a (n, width, height, 2) numpy array of AB values for n images.
+'''
+def batchUnquantize(Y, bins, T=0.38):
+    result = []
+    for prob in Y:
+        result.append(unquantize(prob, bins, T))
+    return np.array(result)

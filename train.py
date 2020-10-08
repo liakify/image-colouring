@@ -9,7 +9,7 @@ import models
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-ids = data.getImageIds(0.01)
+ids = data.getImageIds(0.0005)
 trainIds, testIds = train_test_split(ids, test_size=0.2, random_state=42)
 
 np.save("npy/train", trainIds)
@@ -30,3 +30,15 @@ model.fit(x=X_train,
 
 model.save("models/MSEmodel")
 '''
+
+# Classification model
+bins = np.load("npy/pts_in_hull.npy")
+Y_train = data.batchQuantize(Y_train, bins)
+model = models.getClassificationModel()
+
+model.fit(x=X_train, 
+    y=Y_train,
+    batch_size=1,
+    epochs=100)
+
+model.save("models/ClassificationModel")

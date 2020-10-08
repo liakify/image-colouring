@@ -3,7 +3,7 @@ Contains the models used in the project.
 '''
 
 import tensorflow as tf
-from tensorflow.keras.layers import Conv2D, UpSampling2D, InputLayer
+from tensorflow.keras.layers import Conv2D, UpSampling2D, InputLayer, Activation
 from tensorflow.keras.models import Sequential
 
 
