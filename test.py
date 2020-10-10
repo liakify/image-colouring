@@ -7,7 +7,7 @@ import numpy as np
 from tensorflow import keras
 
 testIds = np.load("npy/test.npy")
-X_test, Y_test = data.loadImageData(testIds)
+# X_test, Y_test = data.loadImageData(testIds)
 
 # Model specific code
 '''
@@ -24,9 +24,11 @@ data.generateImages(X_test, predictions * 127, testIds)
 model = keras.models.load_model("models/ClassificationModel")
 bins = np.load("npy/pts_in_hull.npy")
 
-Y_test = data.batchQuantize(Y_test, bins)
-model.evaluate(X_test, Y_test, batch_size=1)
+# Y_test = data.batchQuantize(Y_test, bins)
+# model.evaluate(X_test, Y_test, batch_size=1)
 
-predictions = model.predict(X_test)
-AB = data.batchUnquantize(predictions, bins)
-data.generateImages(X_test, AB, testIds)
+for id in testIds:
+    X_test, Y_test = data.loadImageData([id])
+    predictions = model.predict(X_test)
+    AB = data.batchUnquantize(predictions, bins)
+    data.generateImages(X_test, AB, [id])
