@@ -5,8 +5,6 @@ import numpy as np
 from PIL import Image
 from skimage.color import rgb2lab, lab2rgb, rgb2gray, xyz2lab
 from sklearn.neighbors import NearestNeighbors
-import tensorflow as tf
-from tensorflow.sparse import SparseTensor
 
 END = 8189
 IMAGE_FOLDER = "../jpg"
@@ -146,7 +144,7 @@ AB is a (width, height, 2) numpy array containing AB values an image.
 bins is a (m, 2) numpy array containing m different AB values to quantize to.
 k is an int to set the number of nearest bins to quantize to. Default is 5.
 
-Returns a (width, height, m) SparseTensor containing the per-pixel 
+Returns a (width, height, m) numpy array containing the per-pixel 
     discrete probability distribution. 
 '''
 def quantize(AB, bins, k=5):
@@ -165,9 +163,8 @@ def quantize(AB, bins, k=5):
 
     result = np.zeros((numPixels, numBins))
     result[np.arange(numPixels)[:, np.newaxis], indices] = weights
-    result = tf.convert_to_tensor(result.reshape(width, height, numBins))
 
-    return tf.sparse.from_dense(result)
+    return result.reshape(width, height, numBins)
 
 '''
 Convenience function to call quantize() for multiple images at once.
@@ -176,28 +173,27 @@ Y is a (n, width, height, 2) numpy array containing AB values of n images.
 bins - see quantize().
 k - see quantize(). Defaults to 5.
 
-Returns a (n, width, height, m) SparseTensor array where m is the number of colour bins.
+Returns a (n, width, height, m) numpy array where m is the number of colour bins.
 '''
 def batchQuantize(Y, bins, k=5):
     result = []
     for ab in Y:
-        sparse = tf.sparse.expand_dims(quantize(ab, bins, k), axis=0)
-        result.append(sparse)
-    return tf.sparse.concat(result, axis=0)
+        result.append(quantize(ab, bins, k))
+    return np.array(result)
 
 '''
 Restores image AB values from a discrete probability distribution over the
     specified colour palette (or "bins"). Each pixel value is calculated as the
     expected value of its distribution
 
-prob is a (width, height, m) SparseTensor containing the probability distribution 
+prob is a (width, height, m) numpy array containing the probability distribution 
     of each colour value per pixel.
 bins is a (m, 2) numpy array containing m different AB values in the specified distribution.
 T is a parameter in the interval (0, 1] to adjust the distribution. Default is 0.38.
     T = 1 predicts the mean while T near 0 predicts the mode.
 '''
 def unquantize(prob, bins, T=0.38):
-    adjusted = tf.math.exp(tf.math.log(prob) / T)
+    adjusted = np.exp(np.log(prob) / T)
     adjusted /= np.sum(adjusted, axis=2)[:,:,np.newaxis]
     return np.dot(adjusted, bins)
 

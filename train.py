@@ -10,41 +10,41 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-ids = data.getImageIds(0.01)
+ids = data.getImageIds(0.5)
 trainIds, testIds = train_test_split(ids, test_size=0.2, random_state=42)
 print("Len of trainIds:", len(trainIds))
 print("Len of testIds:", len(testIds))
 
-np.save("npy/train", trainIds)
-np.save("npy/test", testIds)
+np.save("npy/train_50_20_32_100", trainIds)
+np.save("npy/test_50_20_32_100", testIds)
 
 X_train, Y_train = data.loadImageData(trainIds)
 
 # Model specific code
-'''
+
 # MSE model
 Y_train /= 128
-model = models.getCIE94Model()
+model = models.getMSEModel()
 
 model.fit(x=X_train, 
     y=Y_train,
-    batch_size=4,
+    batch_size=32,
     epochs=100)
 
 model.save("models/MSEmodel_50_20_32_100")
-'''
+
 
 # Classification model
-
+'''
 bins = np.load("npy/pts_in_hull.npy")
 model = models.getClassificationModel()
 Y_train = data.batchQuantize(Y_train, bins)
 
 model.fit(x=X_train,
     y=Y_train,
-    batch_size=1,
+    batch_size=32,
     epochs=100)
-'''
+
 # Manual loop if unable to process all in RAM at once
 epochs = 100
 with tf.device("cpu:0"):
@@ -57,5 +57,6 @@ with tf.device("cpu:0"):
                 y=Y_train,
                 batch_size=1,
                 epochs=1)
+
+model.save("models/ClassificationModel_10_20_32_100")
 '''
-model.save("models/ClassificationModel")
