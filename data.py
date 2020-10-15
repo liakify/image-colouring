@@ -3,11 +3,14 @@ Module contains all the data and image processing functions.
 '''
 import numpy as np
 from PIL import Image
+from PIL import ImageOps
 from skimage.color import rgb2lab, lab2rgb, rgb2gray, xyz2lab
 from sklearn.neighbors import NearestNeighbors
 
 END = 8189
 IMAGE_FOLDER = "../jpg"
+SEGMIM_FOLDER = "../segmim"
+NEWINPUTS_FOLDER = "../newinputs"
 OUTPUT_FOLDER = "../output"
 
 '''
@@ -33,6 +36,70 @@ def calculateRGBY(image):
     rgbSum = np.sum(pixels, axis=0)
     rgbAvg = rgbSum / pixels.shape[0]
     return np.append(rgbAvg, rgbAvg[0] * rgbAvg[1] - rgbAvg[2] ** 2)
+
+
+'''
+Just run this to preprocess the images
+'''
+
+
+def runThis():
+    randomCropAllImageAndSegmim()
+    createMaskAll()
+    applyMaskAll()
+
+'''
+Creates mask from segmim image
+'''
+
+
+def createMask(segmim):
+    allPixels = np.array(segmim)
+    mask = np.logical_and(
+        allPixels[:, :, 2] > 250,
+        allPixels[:, :, 1] < 2,
+        allPixels[:, :, 0] < 2
+    )
+    return Image.fromarray((mask * 255).astype(np.uint8))
+
+
+'''
+Creates mask from all segmims
+'''
+
+
+def createMaskAll():
+    for i in range(1, END + 1):
+        im = Image.open('{}/segmim_cropped_{:05d}.jpg'.format(SEGMIM_FOLDER, i))
+        mask = createMask(im)
+        mask.save('{}/mask_{:05d}.jpg'.format(NEWINPUTS_FOLDER, i))
+
+
+'''
+Applies mask to jpg folder
+'''
+
+
+def applyMask(img, mask):
+    blackImage = Image.open('../blueImage.jpg')
+    invertedMask = ImageOps.invert(mask)
+    background = Image.composite(blackImage, img, invertedMask)
+    flower = Image.composite(blackImage, img, mask)
+    return background, flower
+
+
+'''
+Applies mask to all jpgs
+'''
+
+
+def applyMaskAll():
+    for i in range(1, END + 1):
+        im = Image.open('{}/image_cropped_{:05d}.jpg'.format(IMAGE_FOLDER, i))
+        mask = Image.open('{}/mask_{:05d}.jpg'.format(NEWINPUTS_FOLDER, i))
+        processedImages = applyMask(im, mask)
+        processedImages[0].save('{}/background_{:05d}.jpg'.format(NEWINPUTS_FOLDER, i))
+        processedImages[1].save('{}/flower_{:05d}.jpg'.format(NEWINPUTS_FOLDER, i))
 
 
 '''
@@ -85,6 +152,36 @@ def randomCropAll():
         im = Image.open('{}/image_{:05d}.jpg'.format(IMAGE_FOLDER, i))
         croppedIm = randomCrop(im)
         croppedIm.save('{}/image_cropped_{:05d}.jpg'.format(IMAGE_FOLDER, i))
+
+
+'''
+Takes in a PIL.Image object and returns a new PIL.Image randomly cropped to the specified dimensions (w, h).
+If unspecified, dim = (384, 384) by default.
+If image dimensions are less than dim in any axis then it is not cropped along that axis.
+'''
+
+
+def randomDoubleCrop(image, segmim, dim=(384, 384)):
+    w, h = image.size
+    left = np.random.randint(0, max(0, w - dim[0]) + 1)
+    right = min(w, left + dim[0])
+    top = np.random.randint(0, max(0, h - dim[1]) + 1)
+    bottom = min(h, top + dim[1])
+    return image.crop((left, top, right, bottom)), segmim.crop((left, top, right, bottom))
+
+
+'''
+Outputs a 384x384 image named segmim_cropped_XXXXX.jpg for every segmim.
+'''
+
+
+def randomCropAllImageAndSegmim():
+    for i in range(1, END + 1):
+        im = Image.open('{}/image_{:05d}.jpg'.format(IMAGE_FOLDER, i))
+        segmim = Image.open('{}/segmim_{:05d}.jpg'.format(SEGMIM_FOLDER, i))
+        croppedImgs = randomDoubleCrop(im, segmim)
+        croppedImgs[0].save('{}/image_cropped_{:05d}.jpg'.format(IMAGE_FOLDER, i))
+        croppedImgs[1].save('{}/segmim_cropped_{:05d}.jpg'.format(SEGMIM_FOLDER, i))
 
 
 '''

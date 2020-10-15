@@ -15,24 +15,34 @@ trainIds, testIds = train_test_split(ids, test_size=0.2, random_state=42)
 print("Len of trainIds:", len(trainIds))
 print("Len of testIds:", len(testIds))
 
-np.save("npy/CIE94_train_1_20_32_10000", trainIds)
-np.save("npy/CIE94_test_1_20_32_10000", testIds)
-
 X_train, Y_train = data.loadImageData(trainIds)
 
 # Model specific code
 
+# Fixing issue with GPU Usage. Feel free to comment out but pls don't delete
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        # Currently, memory growth needs to be the same across GPUs
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+    except RuntimeError as e:
+        # Memory growth must be set before GPUs have been initialized
+        print(e)
+
 # MSE model
 Y_train /= 128
+
 model = models.getCIE94Model()
 
-model.fit(x=X_train, 
-    y=Y_train,
-    batch_size=32,
-    epochs=10000)
+model.fit(x=X_train,
+          y=Y_train,
+          batch_size=32,
+          epochs=1000)
 
 model.save("models/CIEmodel_1_20_32_10000")
-
 
 # Classification model
 '''
