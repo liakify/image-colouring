@@ -164,7 +164,7 @@ def quantize(AB, bins, k=5):
     result = np.zeros((numPixels, numBins))
     result[np.arange(numPixels)[:, np.newaxis], indices] = weights
 
-    return result.reshape(width, height, numBins)
+    return result.reshape(width, height, numBins).astype(np.float32)
 
 '''
 Convenience function to call quantize() for multiple images at once.
@@ -179,7 +179,7 @@ def batchQuantize(Y, bins, k=5):
     result = []
     for ab in Y:
         result.append(quantize(ab, bins, k))
-    return np.array(result)
+    return np.array(result, dtype=np.float32)
 
 '''
 Restores image AB values from a discrete probability distribution over the
