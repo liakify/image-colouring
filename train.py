@@ -11,13 +11,15 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-ids = data.getImageIds(0.1)
+ids = data.getImageIds(0.5)
+np.random.seed(42)
+ids = np.random.choice(ids, len(ids) // 5 + 1)
 trainIds, testIds = train_test_split(ids, test_size=0.2, random_state=42)
 print("Len of trainIds:", len(trainIds))
 print("Len of testIds:", len(testIds))
 
-np.save("npy/train_10_20_32_100", trainIds)
-np.save("npy/test_10_20_32_100", testIds)
+np.save("npy/train_50_20_4_100", trainIds)
+np.save("npy/test_50_20_4_100", testIds)
 
 # X_train, Y_train = data.loadImageData(trainIds)
 
@@ -48,7 +50,7 @@ for i in range(epochs):
     batchIds = [trainIds[i * batch_size : (i + 1) * batch_size] for i in range(math.ceil(len(trainIds) / batch_size))]
     b = 1
     for ids in batchIds:
-        print("Batch {}/{}".format(b, len(batchIds)))
+        print("Epoch {}/{}, Batch {}/{}".format(i + 1, epochs, b, len(batchIds)))
         b += 1
         X_train, Y_train = data.loadImageData(ids)
         Y_train = data.batchQuantize(Y_train, bins)
@@ -58,5 +60,5 @@ for i in range(epochs):
             batch_size=batch_size,
             epochs=1)
 
-model.save("models/ClassificationModel_10_20_4_100")
+model.save("models/ClassificationModel_50_20_4_100")
 
