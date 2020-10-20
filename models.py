@@ -14,7 +14,7 @@ CIE94 colour distance metric that is an improvement over pure RMSE on the L*a*b*
 NOTE: 
     1. This function is currently hardcoded to be specifically for an image resolution of 384 * 384, and for training batch size 1.
 '''
-def cie94(y_true, y_pred):
+def cie94(y_true, y_pred, batch_size):
     alpha = []
     loss = 0.0
     for x in range(0, 384*384):
@@ -23,7 +23,7 @@ def cie94(y_true, y_pred):
     for y in range(1, 384*384 + 1):
         beta.append(y*2 - 1)
         
-    batch_size = 1 # Batch size is hardcoded, reading y_true.shape[0] is problematic on different environments.
+    batch_size = batch_size # Batch size is hardcoded, reading y_true.shape[0] is problematic on different environments.
     normalizing_constant = batch_size * 384 * 384 # Height and Width are hardcoded, reading y_true.shape[1] and y_true.shape[2] is problematic on different environments.
     for i in range(0, batch_size):
     
@@ -77,24 +77,31 @@ def getMSEModel():
 '''
 Returns the model object for image colouring via CIE94 Colour Distance loss.
 '''
-def getCIE94Model():
+def getCIE94Model(batch_size):
     model = Sequential()
     model.add(InputLayer(input_shape=(None, None, 1)))
-    model.add(Conv2D(8, (3, 3), activation='relu', padding='same', strides=2))
-    model.add(Conv2D(8, (3, 3), activation='relu', padding='same'))
-    model.add(Conv2D(16, (3, 3), activation='relu', padding='same'))
     model.add(Conv2D(16, (3, 3), activation='relu', padding='same', strides=2))
+    model.add(Conv2D(16, (3, 3), activation='relu', padding='same'))
     model.add(Conv2D(32, (3, 3), activation='relu', padding='same'))
     model.add(Conv2D(32, (3, 3), activation='relu', padding='same', strides=2))
+    model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(64, (3, 3), activation='relu', padding='same', strides=2))
+    model.add(UpSampling2D((2, 2)))
+    model.add(Conv2D(64, (3, 3), activation='relu', padding='same'))
     model.add(UpSampling2D((2, 2)))
     model.add(Conv2D(32, (3, 3), activation='relu', padding='same'))
-    model.add(UpSampling2D((2, 2)))
-    model.add(Conv2D(16, (3, 3), activation='relu', padding='same'))
+    model.add(Conv2D(16, (3,3), activation='relu', padding='same'))
     model.add(UpSampling2D((2, 2)))
     model.add(Conv2D(2, (3, 3), activation='tanh', padding='same'))
+	
 
-    model.compile(optimizer='rmsprop',loss=cie94)
+    def getCIE94func(batch_size):
+        return lambda a, b: cie94(a, b, batch_size)
 
+    opti = tf.keras.optimizers.RMSprop(learning_rate=0.0022)
+   
+    model.compile(optimizer='rmsprop',loss=getCIE94func(batch_size))
+	
     return model
 
 '''
