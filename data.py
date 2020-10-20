@@ -81,7 +81,7 @@ Applies mask to jpg folder
 
 
 def applyMask(img, mask):
-    blackImage = Image.open('../blueImage.jpg')
+    blackImage = Image.open('../blackImage.jpg')
     invertedMask = ImageOps.invert(mask)
     background = Image.composite(blackImage, img, invertedMask)
     flower = Image.composite(blackImage, img, mask)
@@ -211,6 +211,39 @@ def loadImageData(ids):
     Y = np.array(Y, dtype=float)
     return X, Y
 
+def loadBackgroundBackgroundImageData(ids):
+    X = []
+    Y = []
+    for i in ids:
+        img = Image.open('{}/background_{:05d}.jpg'.format('../newinputs', i))
+        img = np.array(img)
+
+        x = rgb2lab(img)[:, :, 0]
+        y = rgb2lab(img)[:, :, 1:]
+
+        X.append(x.reshape(x.shape + (1,)))
+        Y.append(y)
+
+    X = np.array(X, dtype=float)
+    Y = np.array(Y, dtype=float)
+    return X, Y
+
+def loadBackgroundFlowerImageData(ids):
+    X = []
+    Y = []
+    for i in ids:
+        img = Image.open('{}/flower_{:05d}.jpg'.format('../newinputs', i))
+        img = np.array(img)
+
+        x = rgb2lab(img)[:, :, 0]
+        y = rgb2lab(img)[:, :, 1:]
+
+        X.append(x.reshape(x.shape + (1,)))
+        Y.append(y)
+
+    X = np.array(X, dtype=float)
+    Y = np.array(Y, dtype=float)
+    return X, Y
 
 '''
 Prepares a list of image IDs to use in training and testing based on the sorted order of IDs stored in the .npy file.
@@ -340,3 +373,6 @@ def batchUnquantize(Y, bins, T=0.38):
     for prob in Y:
         result.append(unquantize(prob, bins, T))
     return np.array(result)
+
+if __name__ == '__main__':
+    runThis()
